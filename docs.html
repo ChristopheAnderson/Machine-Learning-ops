@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Runbooks d'Exploitation Interne (Livrable 2) — SovereignMLOps &amp; Audio-IA Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #0f172a; margin: 0; line-height: 1.6; }
+        .navbar { background: #0f172a; color: #fff; padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar a { color: #38bdf8; text-decoration: none; font-weight: 700; font-size: 13px; }
+        .container { max-width: 1100px; margin: 28px auto; padding: 0 20px; }
+        .rb-card { background: #fff; border: 1px solid #cbd5e1; border-left: 5px solid #0284c7; border-radius: 10px; padding: 20px; margin-bottom: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+        .rb-title { font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+        .rb-meta { font-size: 12px; color: #475569; font-weight: 700; margin-bottom: 12px; }
+        pre { background: #0f172a; color: #e2e8f0; padding: 12px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <div style="font-family:'Outfit',sans-serif; font-weight:800; font-size:17px;">
+        <i class="fa-solid fa-book-medical" style="color:#38bdf8;"></i> Procédures d'Exploitation Standardisées (Runbooks Internes — Livrable 2)
+    </div>
+    <a href="index.html"><i class="fa-solid fa-arrow-left"></i> Retour au Simulateur MLOps &amp; Audio-IA</a>
+</div>
+
+<div class="container">
+    <div class="rb-card">
+        <div class="rb-title">RB-ASIN-01 — Démarrage Ordonné à Froid (Cold Start DAG) &amp; Contrôles Quotidiens</div>
+        <div class="rb-meta">SLA Cible : &lt; 90 secondes · Fréquence : Quotidienne (06h00) ou après maintenance serveur</div>
+        <pre># 1. Vérifier le montage chiffré SQLCipher/LUKS et les quotas disques
+df -h /srv/asin-data &amp;&amp; asin-ctl storage verify-encryption
+
+# 2. Démarrer les 5 services supervisés dans l'ordre strict du graphe (DAG)
+# Ordre : [1] svc-01-db-vault -> [2] svc-02-registry -> [3] svc-03-inference-api -> [4] svc-04-batch -> [5] svc-05-watchdog
+asin-ctl start --ordered --wait-healthy --timeout 90s
+
+# 3. Exécuter la batterie de contrôles quotidiens (Sonde Audio 5s, SHA-256 Modèles, Chaîne HMAC Audit, Drift PSI)
+asin-ctl daily-check --verify-audit-chain --synthetic-audio-probe --export-signed-report</pre>
+    </div>
+
+    <div class="rb-card" style="border-left-color:#059669;">
+        <div class="rb-title">RB-ASIN-02 — Installation &amp; Mise à Jour Hors Ligne par Lots (Air-Gap Release) + Rollback</div>
+        <div class="rb-meta">SLA Cible : Zéro coupure (Blue/Green) · Rollback Transactionnel &lt; 6 secondes</div>
+        <pre># 1. Vérifier hors ligne la signature cryptographique Ed25519 et les sommes SHA-256 du paquet
+asin-ctl bundle verify --file /mnt/sas-airgap/asin-sovereign-bundle-v3.2.0.tar.zst --pubkey /etc/asin/root_ca.pub
+
+# 2. Décompresser dans le répertoire de version et valider les tests de non-régression hors ligne
+asin-ctl release stage --version v3.2.0 --run-offline-regression-gate
+
+# 3. Bascule atomique du lien symbolique de production (ou Rollback immédiat si alerte)
+asin-ctl release promote --version v3.2.0 --atomic-symlink
+# En cas d'anomalie post-bascule : asin-ctl release rollback --to v3.1.0 --instant</pre>
+    </div>
+
+    <div class="rb-card" style="border-left-color:#d97706;">
+        <div class="rb-title">RB-ASIN-03 — Reprise Après Incident Critique (Crash Service, Saturation GPU/RAM, Interruption Batch)</div>
+        <div class="rb-meta">SLA Cible : MTTR &lt; 45 secondes · Garantie Zéro Perte de Transaction</div>
+        <pre># 1. Diagnostiquer l'état des services supervisés et isoler le composant en défaut
+asin-ctl status --all &amp;&amp; journalctl -u asin-svc-03-inference-api -n 50 --no-pager
+
+# 2. Reprise automatique du traitement par lots exactement au dernier offset validé (Idempotent)
+asin-ctl batch resume --from-last-checkpoint --verify-part-files
+
+# 3. Contrôler l'intégrité de la base embarquée et de la chaîne d'audit après reprise
+asin-ctl audit-verify --full-chain</pre>
+    </div>
+
+    <div class="rb-card" style="border-left-color:#1e3a8a;">
+        <div class="rb-title">RB-ASIN-04 — Sauvegarde Chiffrée AES-256-GCM, Restauration &amp; Rotation des Clés (Loi 2017-20)</div>
+        <div class="rb-meta">SLA Cible : RPO &lt; 15 minutes · RTO &lt; 4 minutes · Conformité APDP Bénin</div>
+        <pre># 1. Exécuter une sauvegarde atomique à chaud de la base SQLCipher WAL et des configurations
+asin-ctl backup create --mode hot-wal --cipher AES-256-GCM --output /srv/backups/airgap/
+
+# 2. Tester la restauration complète dans un conteneur isolé (Dry-Run hebdomadaire obligatoire)
+asin-ctl backup test-restore --snapshot latest --sandbox-verify-hmac</pre>
+    </div>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/portal", "destination": "/index.html" },
+    { "source": "/docs", "destination": "/docs.html" },
+    { "source": "/runbook", "destination": "/docs.html" }
+  ]
+}
+

@@ -1,0 +1,33 @@
+version: "3.9"
+
+# ==============================================================================
+# Orchestration des Services Supervisés avec Ordre de Démarrage Strict (DAG),
+# Sondes de Santé (Healthchecks) et Reprise Automatique Après Incident
+# Concepteur : Ing. Christophe WAVOEKE
+# ==============================================================================
+services:
+  svc-01-embedded-db-vault:
+    build: .
+    container_name: asin-svc-01-db-vault
+    command: ["python", "-c", "from src.module3_embedded_db_security_audit import build_and_verify_embedded_audit_chain; print(build_and_verify_embedded_audit_chain())"]
+    restart: always
+    read_only: true
+    tmpfs:
+      - /tmp
+
+  svc-03-audio-ml-inference-api:
+    build: .
+    container_name: asin-svc-03-inference-api
+    ports:
+      - "8000:8000"
+    environment:
+      - SOVEREIGN_AIRGAP_MODE=1
+      - RELEASE_LOCK_VERSION=v3.2.0-sovereign
+    restart: always
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+

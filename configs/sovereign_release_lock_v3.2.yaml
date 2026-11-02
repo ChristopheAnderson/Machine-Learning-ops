@@ -1,0 +1,82 @@
+# ==============================================================================
+# REGISTRE DE VERSIONNAGE CONJOINT (MODÈLES + CONFIGURATIONS + SERVICES)
+# SovereignMLOps & Audio-IA Exploitation Hub — Version v3.2.0-airgap
+# Concepteur : Ing. Christophe WAVOEKE (Bac+5 ENSGMM/UNSTIM)
+# ==============================================================================
+release_metadata:
+  bundle_version: "v3.2.0-sovereign"
+  release_date: "2026-11-02T00:00:00Z"
+  environment: "SOVEREIGN_AIRGAP_DATACENTER_COTONOU"
+  compliance_standard: "Loi N° 2017-20 Code du Numérique (APDP Bénin)"
+  manifest_sha256: "e9f4b2c871d03a6e4c5192f8b7d31a04958c7e6a2b1d4f80392a1c6e7b8d9f01"
+  signature_scheme: "Ed25519-Offline-Root-CA"
+
+supervised_services_startup_order:
+  - order: 1
+    service_id: "svc-01-embedded-db-vault"
+    type: "Service de Données Embarqué (SQLCipher WAL + DuckDB)"
+    port: 5439
+    healthcheck_cmd: "python -m src.healthcheck --check-db-cipher --verify-audit-chain"
+    startup_timeout_sec: 10
+    restart_policy: "always (backoff: 2s -> 16s)"
+  - order: 2
+    service_id: "svc-02-model-config-registry"
+    type: "Registre Hors Ligne Modèles & Configurations Versionnés"
+    port: 8081
+    depends_on: ["svc-01-embedded-db-vault"]
+    healthcheck_cmd: "curl -fsS http://127.0.0.1:8081/healthz/lockfile"
+    startup_timeout_sec: 15
+    restart_policy: "always"
+  - order: 3
+    service_id: "svc-03-audio-ml-inference-api"
+    type: "Interface de Programmation (API REST/gRPC FastAPI + CTranslate2)"
+    port: 8000
+    depends_on: ["svc-01-embedded-db-vault", "svc-02-model-config-registry"]
+    healthcheck_cmd: "curl -fsS http://127.0.0.1:8000/api/v1/health"
+    startup_timeout_sec: 35
+    restart_policy: "on-failure (max_retries: 5, circuit_breaker: enabled)"
+  - order: 4
+    service_id: "svc-04-offline-batch-worker"
+    type: "Service de Traitement par Lots (Batch Audio & ML Queue)"
+    port: 8090
+    depends_on: ["svc-03-audio-ml-inference-api"]
+    healthcheck_cmd: "python -m src.healthcheck --check-batch-worker-heartbeat"
+    startup_timeout_sec: 20
+    restart_policy: "always"
+  - order: 5
+    service_id: "svc-05-observability-watchdog"
+    type: "Supervision, Contrôles Quotidiens & Exportateur Prometheus Hors Ligne"
+    port: 9090
+    depends_on: ["svc-03-audio-ml-inference-api", "svc-04-offline-batch-worker"]
+    healthcheck_cmd: "curl -fsS http://127.0.0.1:9090/-/healthy"
+    startup_timeout_sec: 10
+    restart_policy: "always"
+
+versioned_models:
+  asr_speech_to_text:
+    name: "Faster-Whisper-Large-v3-CTranslate2"
+    quantization: "INT8_FLOAT16"
+    weights_sha256: "8f14e45fceea167a5a36dedd4bea2543a91c8402e7b5a1983f91b238c04d12a9"
+    size_mb: 1540
+    beam_size: 5
+    vad_filter: "Silero-VAD-v5 (threshold=0.52, min_silence_ms=400)"
+  speaker_diarization:
+    name: "Pyannote-Speaker-Diarization-3.1-Sovereign"
+    embedding_backbone: "ECAPA-TDNN-512d"
+    clustering_method: "AgglomerativeSpectralClustering (cosine_threshold=0.68)"
+    weights_sha256: "4c92a7b18e3f0519d26c48a7e0f13b98247561c0a3e8f9d2b47c1650a8e3d211"
+    size_mb: 312
+  tabular_anomaly_detector:
+    name: "XGBoost-IsolationForest-Sovereign-Risk-v3.2"
+    weights_sha256: "2a7d91c40e5b8321f6a94c07d8e12b3490f561a2c8e4d7b90123f4a5c6d7e890"
+    size_mb: 48
+
+security_and_storage:
+  embedded_database_engine: "SQLite 3.46 (SQLCipher 4.6 WAL Mode) + DuckDB 1.1 Analytics"
+  encryption_algorithm: "AES-256-GCM (Key Derivation: Argon2id / PBKDF2-HMAC-SHA256, 600000 iterations)"
+  audit_log_mode: "TAMPER_EVIDENT_SHA256_HASH_CHAIN"
+  backup_schedule_cron: "0 */4 * * * (Incremental WAL) | 0 2 * * * (Full Encrypted Snapshot)"
+  retention_days: 90
+  rpo_target_minutes: 15
+  rto_target_minutes: 4
+
