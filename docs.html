@@ -29,56 +29,55 @@
 
 <div class="container">
     <div class="rb-card">
-        <div class="rb-title">RB-ASIN-01 — Démarrage Ordonné à Froid (Cold Start DAG) &amp; Contrôles Quotidiens</div>
+        <div class="rb-title">RB-MLOPS-01 — Démarrage Ordonné à Froid (Cold Start DAG) &amp; Contrôles Quotidiens</div>
         <div class="rb-meta">SLA Cible : &lt; 90 secondes · Fréquence : Quotidienne (06h00) ou après maintenance serveur</div>
         <pre># 1. Vérifier le montage chiffré SQLCipher/LUKS et les quotas disques
-df -h /srv/asin-data &amp;&amp; asin-ctl storage verify-encryption
+df -h /srv/sovereign-data &amp;&amp; sovereign-ctl storage verify-encryption
 
 # 2. Démarrer les 5 services supervisés dans l'ordre strict du graphe (DAG)
 # Ordre : [1] svc-01-db-vault -> [2] svc-02-registry -> [3] svc-03-inference-api -> [4] svc-04-batch -> [5] svc-05-watchdog
-asin-ctl start --ordered --wait-healthy --timeout 90s
+sovereign-ctl start --ordered --wait-healthy --timeout 90s
 
 # 3. Exécuter la batterie de contrôles quotidiens (Sonde Audio 5s, SHA-256 Modèles, Chaîne HMAC Audit, Drift PSI)
-asin-ctl daily-check --verify-audit-chain --synthetic-audio-probe --export-signed-report</pre>
+sovereign-ctl daily-check --verify-audit-chain --synthetic-audio-probe --export-signed-report</pre>
     </div>
 
     <div class="rb-card" style="border-left-color:#059669;">
-        <div class="rb-title">RB-ASIN-02 — Installation &amp; Mise à Jour Hors Ligne par Lots (Air-Gap Release) + Rollback</div>
+        <div class="rb-title">RB-MLOPS-02 — Installation &amp; Mise à Jour Hors Ligne par Lots (Air-Gap Release) + Rollback</div>
         <div class="rb-meta">SLA Cible : Zéro coupure (Blue/Green) · Rollback Transactionnel &lt; 6 secondes</div>
         <pre># 1. Vérifier hors ligne la signature cryptographique Ed25519 et les sommes SHA-256 du paquet
-asin-ctl bundle verify --file /mnt/sas-airgap/asin-sovereign-bundle-v3.2.0.tar.zst --pubkey /etc/asin/root_ca.pub
+sovereign-ctl bundle verify --file /mnt/sas-airgap/sovereign-mlops-bundle-v3.2.0.tar.zst --pubkey /etc/sovereign/root_ca.pub
 
 # 2. Décompresser dans le répertoire de version et valider les tests de non-régression hors ligne
-asin-ctl release stage --version v3.2.0 --run-offline-regression-gate
+sovereign-ctl release stage --version v3.2.0 --run-offline-regression-gate
 
 # 3. Bascule atomique du lien symbolique de production (ou Rollback immédiat si alerte)
-asin-ctl release promote --version v3.2.0 --atomic-symlink
-# En cas d'anomalie post-bascule : asin-ctl release rollback --to v3.1.0 --instant</pre>
+sovereign-ctl release promote --version v3.2.0 --atomic-symlink
+# En cas d'anomalie post-bascule : sovereign-ctl release rollback --to v3.1.0 --instant</pre>
     </div>
 
     <div class="rb-card" style="border-left-color:#d97706;">
-        <div class="rb-title">RB-ASIN-03 — Reprise Après Incident Critique (Crash Service, Saturation GPU/RAM, Interruption Batch)</div>
+        <div class="rb-title">RB-MLOPS-03 — Reprise Après Incident Critique (Crash Service, Saturation GPU/RAM, Interruption Batch)</div>
         <div class="rb-meta">SLA Cible : MTTR &lt; 45 secondes · Garantie Zéro Perte de Transaction</div>
         <pre># 1. Diagnostiquer l'état des services supervisés et isoler le composant en défaut
-asin-ctl status --all &amp;&amp; journalctl -u asin-svc-03-inference-api -n 50 --no-pager
+sovereign-ctl status --all &amp;&amp; journalctl -u sovereign-svc-03-inference-api -n 50 --no-pager
 
 # 2. Reprise automatique du traitement par lots exactement au dernier offset validé (Idempotent)
-asin-ctl batch resume --from-last-checkpoint --verify-part-files
+sovereign-ctl batch resume --from-last-checkpoint --verify-part-files
 
 # 3. Contrôler l'intégrité de la base embarquée et de la chaîne d'audit après reprise
-asin-ctl audit-verify --full-chain</pre>
+sovereign-ctl audit-verify --full-chain</pre>
     </div>
 
     <div class="rb-card" style="border-left-color:#1e3a8a;">
-        <div class="rb-title">RB-ASIN-04 — Sauvegarde Chiffrée AES-256-GCM, Restauration &amp; Rotation des Clés (Loi 2017-20)</div>
-        <div class="rb-meta">SLA Cible : RPO &lt; 15 minutes · RTO &lt; 4 minutes · Conformité APDP Bénin</div>
+        <div class="rb-title">RB-MLOPS-04 — Sauvegarde Chiffrée AES-256-GCM, Restauration &amp; Rotation des Clés (Loi 2017-20)</div>
+        <div class="rb-meta">SLA Cible : RPO &lt; 15 minutes · RTO &lt; 4 minutes · Conformité Protection des Données</div>
         <pre># 1. Exécuter une sauvegarde atomique à chaud de la base SQLCipher WAL et des configurations
-asin-ctl backup create --mode hot-wal --cipher AES-256-GCM --output /srv/backups/airgap/
+sovereign-ctl backup create --mode hot-wal --cipher AES-256-GCM --output /srv/backups/airgap/
 
 # 2. Tester la restauration complète dans un conteneur isolé (Dry-Run hebdomadaire obligatoire)
-asin-ctl backup test-restore --snapshot latest --sandbox-verify-hmac</pre>
+sovereign-ctl backup test-restore --snapshot latest --sandbox-verify-hmac</pre>
     </div>
 </div>
 </body>
 </html>
-

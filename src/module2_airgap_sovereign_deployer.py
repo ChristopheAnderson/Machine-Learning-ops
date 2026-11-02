@@ -61,23 +61,23 @@ def inspect_airgap_bundle(bundle_version: str = "v3.2.0-sovereign") -> Dict:
     ]
 
     return {
-        "bundle_id": f"asin-sovereign-bundle-{bundle_version}.tar.zst",
+        "bundle_id": f"sovereign-mlops-bundle-{bundle_version}.tar.zst",
         "network_egress_policy": "STRICT_AIRGAP (0 connexion Internet sortante requise)",
         "total_size_gb": round(sum(a.size_mb for a in artifacts) / 1024.0, 2),
-        "signature_verification": "VALIDE (Signature Ed25519 Autorité Interne ASIN)",
+        "signature_verification": "VALIDE (Signature Ed25519 Autorité Interne Souveraine)",
         "atomic_update_strategy": (
-            "Décompression dans /opt/asin-ia/releases/v3.2.0 -> Vérification SHA-256 -> "
-            "Test de fumée hors ligne -> Bascule atomique du lien symbolique /opt/asin-ia/current "
+            "Décompression dans /opt/sovereign-ia/releases/v3.2.0 -> Vérification SHA-256 -> "
+            "Test de fumée hors ligne -> Bascule atomique du lien symbolique /opt/sovereign-ia/current "
             "-> Rollback instantané (< 6s) vers v3.1.0 si échec de sonde."
         ),
         "rbac_access_matrix": [
-            {"role": "exploitant_ia_asin", "linux_uid": 1040, "permissions": "Démarrage/Arrêt services, Lecture logs, Exécution Runbook"},
+            {"role": "exploitant_ia_ops", "linux_uid": 1040, "permissions": "Démarrage/Arrêt services, Lecture logs, Exécution Runbook"},
             {"role": "auditeur_securite_apdp", "linux_uid": 1041, "permissions": "Lecture seule journal d'audit signé, Vérification intégrité"},
             {"role": "admin_souverain_psid", "linux_uid": 1042, "permissions": "Mise à jour par lots signés, Rotation clés KMS locales, Restauration"},
         ],
         "backup_restore_protocol": {
-            "backup_command": "asin-ctl backup --mode=hot-wal --cipher=AES-256-GCM --dest=/srv/backups/airgap/",
-            "restore_command": "asin-ctl restore --snapshot=latest --verify-hmac --dry-run=false",
+            "backup_command": "sovereign-ctl backup --mode=hot-wal --cipher=AES-256-GCM --dest=/srv/backups/airgap/",
+            "restore_command": "sovereign-ctl restore --snapshot=latest --verify-hmac --dry-run=false",
             "measured_rpo_minutes": 15,
             "measured_rto_minutes": 3.8,
         },

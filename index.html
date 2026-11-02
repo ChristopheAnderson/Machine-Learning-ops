@@ -307,10 +307,10 @@
                 </tbody>
             </table>
             <div class="terminal">
-$ asin-ctl bundle deploy --archive asin-sovereign-bundle-v3.2.0.tar.zst --offline
+$ sovereign-ctl bundle deploy --archive sovereign-mlops-bundle-v3.2.0.tar.zst --offline
 [1/4] Vérification signature Ed25519 &amp; manifestes SHA-256 ............ OK (4.62 Go)
 [2/4] Chargement images OCI &amp; validation Gate Non-Régression ........ OK (DER=5.47%)
-[3/4] Bascule atomique /opt/asin-ia/current -&gt; releases/v3.2.0 ....... OK (0 coupure)
+[3/4] Bascule atomique /opt/sovereign-ia/current -&gt; releases/v3.2.0 .. OK (0 coupure)
 [4/4] Sauvegarde WAL chiffrée AES-256-GCM (/srv/backups/airgap) ...... OK (RTO=3.8m)
             </div>
         </div>
@@ -471,7 +471,7 @@ function updateIncidentSim() {
 }
 
 function updateCipher() {
-    const txt = document.getElementById('sensitiveInput').value || 'ASIN';
+    const txt = document.getElementById('sensitiveInput').value || 'SOVEREIGN';
     let hash = 0;
     for (let i = 0; i < txt.length; i++) { hash = ((hash << 5) - hash) + txt.charCodeAt(i); hash |= 0; }
     const hex = Math.abs(hash).toString(16).padStart(8, 'a').repeat(8);

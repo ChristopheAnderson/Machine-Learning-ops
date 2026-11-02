@@ -67,57 +67,56 @@ def plan_datacenter_scaling(
 
 def get_internal_operational_runbooks() -> List[Dict]:
     """
-    Retourne les procédures d'exploitation standardisées (Runbooks — Livrable 2 ASIN)
-    documentées et maintenues en interne pour les équipes de l'Agence.
+    Retourne les procédures d'exploitation standardisées (Runbooks — Livrable 2)
+    documentées et maintenues en interne pour les équipes d'exploitation.
     """
     return [
         {
-            "runbook_id": "RB-ASIN-01",
+            "runbook_id": "RB-MLOPS-01",
             "title": "Démarrage Ordonné à Froid (Cold Start) & Contrôles Quotidiens",
             "sla_target": "< 90 secondes",
             "frequency": "Quotidien (06h00) ou après maintenance serveur",
             "steps": [
-                "1. Vérifier le montage chiffré LUKS/SQLCipher et l'espace disque (/srv/asin-data < 80%).",
-                "2. Démarrer la pile dans l'ordre strict : `asin-ctl start --ordered` (DB -> Registry -> API -> Batch -> Watchdog).",
-                "3. Exécuter la sonde de contrôle quotidien : `asin-ctl daily-check --verify-audit --synthetic-audio`.",
-                "4. Vérifier que le rapport JSON signé est archivé dans `/var/log/asin-ia/daily_reports/`.",
+                "1. Vérifier le montage chiffré LUKS/SQLCipher et l'espace disque (/srv/sovereign-data < 80%).",
+                "2. Démarrer la pile dans l'ordre strict : `sovereign-ctl start --ordered` (DB -> Registry -> API -> Batch -> Watchdog).",
+                "3. Exécuter la sonde de contrôle quotidien : `sovereign-ctl daily-check --verify-audit --synthetic-audio`.",
+                "4. Vérifier que le rapport JSON signé est archivé dans `/var/log/sovereign-ia/daily_reports/`.",
             ],
         },
         {
-            "runbook_id": "RB-ASIN-02",
+            "runbook_id": "RB-MLOPS-02",
             "title": "Mise à Jour Hors Ligne par Lots (Air-Gapped Release) & Rollback Atomique",
             "sla_target": "Zéro coupure (Blue/Green) | Rollback < 8 secondes",
             "frequency": "Lors de chaque livraison de modèle ou correctif validé",
             "steps": [
-                "1. Importer l'archive `.tar.zst` sur le sas de sécurité et vérifier la signature : `asin-ctl bundle verify --sig Ed25519`.",
+                "1. Importer l'archive `.tar.zst` sur le sas de sécurité et vérifier la signature : `sovereign-ctl bundle verify --sig Ed25519`.",
                 "2. Charger les images OCI dans le registre local et valider le lockfile `sovereign_release_lock_v3.2.yaml`.",
                 "3. Lancer les tests de non-régression hors ligne (Golden Dataset ML + Audio DER/WER).",
-                "4. Basculer le lien symbolique `/opt/asin-ia/current` et recharger les workers. Si sonde KO : `asin-ctl rollback --instant`.",
+                "4. Basculer le lien symbolique `/opt/sovereign-ia/current` et recharger les workers. Si sonde KO : `sovereign-ctl rollback --instant`.",
             ],
         },
         {
-            "runbook_id": "RB-ASIN-03",
+            "runbook_id": "RB-MLOPS-03",
             "title": "Reprise Après Incident Critique (Crash Service, Saturation GPU/RAM ou Verrou DB)",
             "sla_target": "MTTR < 45 secondes | Perte de données = 0",
             "frequency": "Sur alerte Watchdog P1/P2",
             "steps": [
-                "1. Identifier le service en alerte via `asin-ctl status --verbose` et consulter les 100 dernières lignes du journal.",
-                "2. Si saturation VRAM/RAM sur l'API Audio : activer le profil de secours quantifié INT8 (`asin-ctl failover --profile int8`).",
-                "3. Si interruption du worker par lots : relancer `asin-ctl batch resume --from-checkpoint` (reprise idempotente).",
-                "4. Exécuter `asin-ctl audit-verify` pour confirmer l'intégrité de la chaîne de hachage après incident.",
+                "1. Identifier le service en alerte via `sovereign-ctl status --verbose` et consulter les 100 dernières lignes du journal.",
+                "2. Si saturation VRAM/RAM sur l'API Audio : activer le profil de secours quantifié INT8 (`sovereign-ctl failover --profile int8`).",
+                "3. Si interruption du worker par lots : relancer `sovereign-ctl batch resume --from-checkpoint` (reprise idempotente).",
+                "4. Exécuter `sovereign-ctl audit-verify` pour confirmer l'intégrité de la chaîne de hachage après incident.",
             ],
         },
         {
-            "runbook_id": "RB-ASIN-04",
-            "title": "Sauvegarde Chiffrée, Test de Restauration & Rotation des Clés (APDP / Loi 2017-20)",
+            "runbook_id": "RB-MLOPS-04",
+            "title": "Sauvegarde Chiffrée, Test de Restauration & Rotation des Clés (Loi 2017-20)",
             "sla_target": "RPO < 15 min | RTO < 4 min",
             "frequency": "Sauvegarde WAL toutes les 4h | Test de restauration hebdomadaire",
             "steps": [
-                "1. Déclencher un snapshot atomique à chaud : `asin-ctl backup --hot-wal --encrypt AES-256-GCM`.",
+                "1. Déclencher un snapshot atomique à chaud : `sovereign-ctl backup --hot-wal --encrypt AES-256-GCM`.",
                 "2. Vérifier l'empreinte SHA-256 et le tag d'authentification GCM de l'archive générée.",
-                "3. Effectuer un test de restauration isolé dans un conteneur bac à sable : `asin-ctl restore-test --sandbox`.",
-                "4. Procéder à la rotation trimestrielle de la clé maîtresse locale (`asin-ctl kms rotate-key --reencrypt-dek`).",
+                "3. Effectuer un test de restauration isolé dans un conteneur bac à sable : `sovereign-ctl restore-test --sandbox`.",
+                "4. Procéder à la rotation trimestrielle de la clé maîtresse locale (`sovereign-ctl kms rotate-key --reencrypt-dek`).",
             ],
         },
     ]
-

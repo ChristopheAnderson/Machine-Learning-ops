@@ -8,7 +8,7 @@ version: "3.9"
 services:
   svc-01-embedded-db-vault:
     build: .
-    container_name: asin-svc-01-db-vault
+    container_name: sovereign-svc-01-db-vault
     command: ["python", "-c", "from src.module3_embedded_db_security_audit import build_and_verify_embedded_audit_chain; print(build_and_verify_embedded_audit_chain())"]
     restart: always
     read_only: true
@@ -17,7 +17,7 @@ services:
 
   svc-03-audio-ml-inference-api:
     build: .
-    container_name: asin-svc-03-inference-api
+    container_name: sovereign-svc-03-inference-api
     ports:
       - "8000:8000"
     environment:

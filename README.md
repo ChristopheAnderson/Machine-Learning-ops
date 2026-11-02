@@ -31,7 +31,7 @@ Elle couvre de manière modulaire et vérifiable les **5 domaines critiques** du
    * Contrôle qualité automatisé (*Audio QA Gate*) mesurant le **SNR (dB)**, le **DER (*Diarization Error Rate* : `5.47%`)**, le **WER (`6.18%`)**, la vitesse d'inférence (**`11.8×` plus rapide que le temps réel**, `RTF = 0.085`) et isolant automatiquement les segments sous le seuil de confiance pour révision.
 5. **Module 5 (`src/module5_cicd_versioning_scaling_runbook.py`) — Industrialisation CI/CD Hors Ligne, Versionnage Conjoint Modèles/Configs, Montée en Charge & Runbook Interne** :
    * Versionnage conjoint atomique (`configs/sovereign_release_lock_v3.2.yaml`) liant modèles, configurations et conteneurs.
-   * Dimensionnement de la montée en charge multi-unités de calcul en centre de données (Haute Disponibilité $N+1$, jusqu'à **399 heures d'audio traitées par heure** sur 4 nœuds GPU L4) et **4 Procédures d'Exploitation Standardisées (Runbooks `RB-ASIN-01` à `RB-ASIN-04`)** prêtes pour les équipes internes.
+   * Dimensionnement de la montée en charge multi-unités de calcul en centre de données (Haute Disponibilité $N+1$, jusqu'à **399 heures d'audio traitées par heure** sur 4 nœuds GPU L4) et **4 Procédures d'Exploitation Standardisées (Runbooks `RB-MLOPS-01` à `RB-MLOPS-04`)** prêtes pour les équipes d'exploitation.
 
 ---
 

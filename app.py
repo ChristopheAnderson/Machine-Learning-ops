@@ -12,7 +12,7 @@ from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 BASE_DIR = Path(__file__).resolve().parent
 
 app = FastAPI(
-    title="SovereignMLOps & Audio-IA Exploitation Hub — ASIN Bénin",
+    title="SovereignMLOps & Audio-IA Exploitation Hub",
     description=(
         "Plateforme industrielle de mise en production, d'exploitation souveraine hors ligne et de supervision IA : "
         "(1) Orchestration de services supervisés (Service de données, API, Traitement par lots), ordre de démarrage DAG, "
@@ -102,7 +102,7 @@ def api_supervised_services(
 @app.get("/api/v1/module2/airgap-bundle", tags=["Module 2 — Exploitation Hors Ligne (Air-Gap)"])
 def api_airgap_bundle(bundle_version: str = Query("v3.2.0-sovereign")):
     return {
-        "bundle_id": f"asin-sovereign-bundle-{bundle_version}.tar.zst",
+        "bundle_id": f"sovereign-mlops-bundle-{bundle_version}.tar.zst",
         "network_egress_policy": "STRICT_AIRGAP (0 connexion Internet sortante requise)",
         "total_size_gb": 4.52,
         "signature_verification": "VALIDE (Ed25519 + SHA-256)",
@@ -114,10 +114,10 @@ def api_airgap_bundle(bundle_version: str = Query("v3.2.0-sovereign")):
 
 @app.get("/api/v1/module3/embedded-db-security", tags=["Module 3 — Base Embarquée, Chiffrement & Audit"])
 def api_embedded_db_security(
-    sample_sensitive_data: str = Query("NPI:2026991842|Transcription_Confidentielle_ASIN"),
+    sample_sensitive_data: str = Query("NPI:2026991842|Transcription_Confidentielle_Souveraine"),
     tamper_test: bool = Query(False, description="Simuler une tentative d'altération du journal d'audit"),
 ):
-    key = hashlib.pbkdf2_hmac("sha256", b"KMS_LOCAL_KEY_V3", b"ASIN_BENIN_SOVEREIGN_SALT_2026", 100_000, dklen=32)
+    key = hashlib.pbkdf2_hmac("sha256", b"KMS_LOCAL_KEY_V3", b"SOVEREIGN_MLOPS_SALT_2026", 100_000, dklen=32)
     cipher_hex = hmac.new(key, sample_sensitive_data.encode("utf-8"), hashlib.sha256).hexdigest()
     return {
         "embedded_db_engine": "SQLite 3.46 WAL / SQLCipher 4.6 AES-256-GCM",
@@ -157,5 +157,5 @@ def api_scaling_and_runbook(
         "active_units_ha_n_plus_1": eff_units,
         "audio_hours_processed_per_hour": audio_hr,
         "audio_hours_processed_per_24h": round(audio_hr * 24, 1),
-        "runbooks": ["RB-ASIN-01 (Cold Start & Daily Check)", "RB-ASIN-02 (Air-Gap Release & Rollback)", "RB-ASIN-03 (Incident Recovery)", "RB-ASIN-04 (Encrypted Backup & KMS)"],
+        "runbooks": ["RB-MLOPS-01 (Cold Start & Daily Check)", "RB-MLOPS-02 (Air-Gap Release & Rollback)", "RB-MLOPS-03 (Incident Recovery)", "RB-MLOPS-04 (Encrypted Backup & KMS)"],
     }

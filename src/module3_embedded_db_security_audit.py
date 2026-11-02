@@ -25,7 +25,7 @@ class AuditLogEntry:
     entry_hmac_sha256: str
 
 
-def derive_sovereign_key(passphrase: str, salt: bytes = b"ASIN_BENIN_SOVEREIGN_SALT_2026") -> bytes:
+def derive_sovereign_key(passphrase: str, salt: bytes = b"SOVEREIGN_MLOPS_SALT_2026") -> bytes:
     """
     Dérive une clé de chiffrement 256 bits via PBKDF2-HMAC-SHA256 (600 000 itérations, norme OWASP/NIST).
     """
@@ -78,7 +78,7 @@ def build_and_verify_embedded_audit_chain(tamper_test: bool = False) -> Dict:
         """
     )
 
-    audit_secret = derive_sovereign_key("ASIN_AUDIT_HMAC_MASTER_KEY_2026")
+    audit_secret = derive_sovereign_key("SOVEREIGN_AUDIT_HMAC_MASTER_KEY_2026")
     raw_events = [
         ("2026-11-02T06:00:02Z", "system_watchdog", "DAILY_HEALTH_CHECK", "cluster_node_01", "AES256GCM:9a8f...3c12"),
         ("2026-11-02T06:15:19Z", "svc_audio_pipeline", "TRANSCRIBE_DIARIZE_BATCH", "audio_batch_20261102_01", "AES256GCM:4d7e...8b01"),

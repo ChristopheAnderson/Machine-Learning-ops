@@ -24,7 +24,7 @@ st.markdown(
         <h2 style="margin:0;color:#ffffff;">🛡️ SovereignMLOps & Audio-IA Exploitation Hub (v3.2.0-airgap)</h2>
         <p style="margin:6px 0 0 0;color:#bae6fd;font-size:14px;">
             <strong>Ing. Christophe WAVOEKE</strong> (Ingénieur de Conception Bac+5 — Lauréat ENSGMM / UNSTIM) ·
-            Déploiement, Exploitation Souveraine Hors Ligne, Sécurité SQLCipher/AES-256, Chaîne Audio (ASR Whisper & Diarisation Pyannote) & Runbooks ASIN
+            Déploiement, Exploitation Souveraine Hors Ligne, Sécurité SQLCipher/AES-256, Chaîne Audio (ASR Whisper & Diarisation Pyannote) & Runbooks d'Exploitation
         </p>
     </div>
     """,
@@ -123,7 +123,7 @@ with tabs[4]:
     s2.metric("Capacité Audio / 24h", f"{scaling['consolidated_capacity']['audio_hours_processed_per_24h']} h/jour")
     s3.metric("Débit API ML Consolidé", f"{scaling['consolidated_capacity']['ml_inference_requests_per_second']} req/s")
 
-    st.write("**Procédures d'Exploitation Standardisées (Runbooks Internes — Livrable 2 ASIN) :**")
+    st.write("**Procédures d'Exploitation Standardisées (Runbooks Internes — Livrable 2) :**")
     for rb in get_internal_operational_runbooks():
         with st.expander(f"📘 {rb['runbook_id']} — {rb['title']} (SLA : {rb['sla_target']})"):
             for step in rb["steps"]:

@@ -13,18 +13,18 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     SOVEREIGN_AIRGAP_MODE=1 \
     SQLCIPHER_WAL_MODE=1
 
-WORKDIR /opt/asin-mlops-hub
+WORKDIR /opt/sovereign-mlops-hub
 
 # Création d'un utilisateur système non-privilégié (Moindre privilège RBAC)
-RUN groupadd -g 1040 asin_ops && useradd -u 1040 -g asin_ops -m -s /bin/bash exploitant_ia_asin
+RUN groupadd -g 1040 mlops_ops && useradd -u 1040 -g mlops_ops -m -s /bin/bash exploitant_ia_ops
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-RUN chown -R exploitant_ia_asin:asin_ops /opt/asin-mlops-hub
+RUN chown -R exploitant_ia_ops:mlops_ops /opt/sovereign-mlops-hub
 
-USER exploitant_ia_asin
+USER exploitant_ia_ops
 EXPOSE 8000
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
