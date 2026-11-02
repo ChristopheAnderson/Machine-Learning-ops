@@ -2,6 +2,12 @@
 name = "asin-mlops-exploitation-hub"
 version = "3.2.0"
 description = "SovereignMLOps & Audio-IA Exploitation Hub — Déploiement Hors Ligne, Base Embarquée Chiffrée, Chaîne Audio ASR/Diarisation & Runbooks"
-authors = [{ name = "Ing. Christophe WAVOEKE", email = "christophewavoeke18@gmail.com" }]
+readme = "README.md"
 requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+]
 
+[tool.vercel]
+entrypoint = "app:app"
